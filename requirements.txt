@@ -1,0 +1,17 @@
+numpy==1.24.3
+pandas==2.0.1
+ipython==7.24.1
+plotly==5.14.1
+minio==7.1.15
+urllib3==1.26.15
+beautifulsoup4==4.12.2
+nltk==3.8.1
+pdfminer.six==20221105
+requests==2.30.0
+text-preprocessing==0.1.1
+texthero==1.1.0
+torch==2.0.1
+datasets==2.12.0
+evaluate==0.4.0
+transformers==4.28.1
+scikit-learn==1.2.2
