@@ -10,7 +10,7 @@ After cloning the repository, go into the folder and run the following command:
 ```pip3 install -e .```
 
 
-# Usage
+## Usage
 The `source` folder contains source codes of the essential classes.
 - `document.py` defines the `Document` class to represent each document (e.g., a pdf or html file).
 - `data_preprocessing.py` defines the `DataPreprocessing` class to preprocess the text of documents.
