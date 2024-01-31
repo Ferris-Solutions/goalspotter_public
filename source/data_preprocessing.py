@@ -10,12 +10,17 @@ class DataPreprocessing:
         pass
 
     def clean_text_blocks(self, df, attribute, level=None):
-        if level == "minimal":
+        if level == "essential":
+            df[attribute] = df[attribute].apply(lambda x: re.sub("[\n]", "", x))
+            df[attribute] = df[attribute].apply(lambda x: text_preprocessing.preprocess_text(x, [text_preprocessing.to_lower]))
+        elif level == "minimal":
             df[attribute] = df[attribute].apply(lambda x: re.sub("[\n]", "", x))
             df[attribute] = df[attribute].apply(lambda x: text_preprocessing.preprocess_text(x, [
                 text_preprocessing.to_lower, text_preprocessing.remove_number]))
-        if level == "heavy":     
+        elif level == "heavy":     
             df[attribute] = texthero.clean(df[attribute])
+        else:
+            raise ValueError(level)
         return df
 
     def filter_text_blocks(self, df, attribute, keep_only_format=None, keep_only_size=None, keep_only_keywords=None):

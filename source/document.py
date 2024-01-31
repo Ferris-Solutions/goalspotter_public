@@ -88,13 +88,38 @@ class Document:
             s = s.strip()
             s = re.sub("[^a-zA-Z]+", "", s)
             return s
+              
+        selected_attributes = ["gy_baseline", "gy_due", "gy_set", "bd_goal_status", 
+                               "change_nb", "change_units", "change_%", "abs_int"]
         
         rdf = pandas.DataFrame({"URL": self.url, "Content Type": self.content_type, "Text Blocks": text_blocks})
         rdf["Text Blocks"] = rdf["Text Blocks"].astype(str)
-        rdf["Preprpcessed Text Blocks"] = rdf["Text Blocks"].apply(text_preprocessor)
-        preprocessed_goals = [text_preprocessor(goal) for goal in self.annotations]
+        rdf["Preprocessed Text Blocks"] = rdf["Text Blocks"].apply(text_preprocessor)
+        for sa in selected_attributes:
+            rdf[sa] = ""
+
+        andf = self.annotations[self.annotations["admin_link"] == self.url].copy()
+        andf["Goal"] = andf["Goal"].astype(str)
+        andf["Preprocessed Goals"] = andf["Goal"].apply(text_preprocessor)
+        andf = andf[andf["Preprocessed Goals"] != ""]
+        
+        preprocessed_goals = andf["Preprocessed Goals"].unique()
         pattern = "|".join(preprocessed_goals)
-        rdf["Goal"] = rdf["Preprpcessed Text Blocks"].str.contains(pattern, case=False)
+        rdf["Goal"] = rdf["Preprocessed Text Blocks"].str.contains(pattern, case=False)
         rdf["Goal"] = rdf["Goal"].astype(int)
-        rdf.drop("Preprpcessed Text Blocks", axis=1, inplace=True)
-        return rdf
+        
+        ndf = rdf[rdf["Goal"] == 0].copy()
+        gdf = rdf[rdf["Goal"] == 1].copy()
+        for i1, r1 in gdf.iterrows():
+            for i2, r2 in andf.iterrows():
+                if r1["Preprocessed Text Blocks"].find(r2["Preprocessed Goals"]) != -1:
+                    row = r1.copy()
+                    row[selected_attributes] = r2[selected_attributes]
+                    ndf = pandas.concat([ndf, row.to_frame().T], ignore_index=True)
+        
+        ndf = ndf.rename(columns= {"gy_set": "Set", "gy_due": "Due", "gy_baseline": "Baseline", 
+                                   "bd_goal_status": "Status", "change_nb": "Change Number", "change_units": "Change Unit", 
+                                   "change_%": "Change Percentage", "abs_int": "Abs-Int"})
+        ndf = ndf.fillna("")
+        ndf = ndf.drop(["Preprocessed Text Blocks"], axis=1)
+        return ndf
